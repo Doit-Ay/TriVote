@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TriVote Secure Biometric Voting Authentication Terminal">
+  <title>TriVote — Secure Biometric Voting System</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/animations.css">
+  <link rel="stylesheet" href="/static/css/home-hero.css?v=20261023o">
+
+  <!-- Socket.IO Client -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+  <!-- Three.js Import Map -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body class="home-screen-active">
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <header class="app-header">
+    <!-- Brand: Indian Tricolor Ribbon Emblem + Title -->
+    <a href="#" id="brand-home-link" class="brand-tricolor-group" title="TriVote Home">
+      <svg width="36" height="26" viewBox="0 0 38 28" fill="none" class="tricolor-ribbon-svg" aria-label="Indian Tricolor Ribbon Emblem">
+        <path d="M2,7 C10,2 18,12 28,6 C31,4 35,5 37,7 L37,12 C28,17 18,7 10,12 C6,14 4,13 2,11 Z" fill="#FF9933"/>
+        <path d="M2,11 C10,6 18,16 28,10 C31,8 35,9 37,11 L37,17 C28,22 18,12 10,17 C6,19 4,18 2,16 Z" fill="#FFFFFF"/>
+        <circle cx="20" cy="14" r="2.2" fill="#000080"/>
+        <circle cx="20" cy="14" r="0.9" fill="#FFFFFF"/>
+        <path d="M2,16 C10,11 18,21 28,15 C31,13 35,14 37,16 L37,22 C28,27 18,17 10,22 C6,24 4,23 2,21 Z" fill="#138808"/>
+      </svg>
+      <div class="brand-titles">
+        <span class="brand-main-title">TriVote</span>
+        <span class="brand-sub-title">Voting Authentication System</span>
+      </div>
+    </a>
+
+    <!-- Center Floating Pill Navigation -->
+    <nav class="nav-center-pill" aria-label="Main Navigation">
+      <button type="button" class="nav-pill-btn active" data-nav="home">Home</button>
+      <button type="button" class="nav-pill-btn" data-nav="about">About</button>
+      <button type="button" class="nav-pill-btn" data-nav="process">Process</button>
+      <button type="button" class="nav-pill-btn" data-nav="benefits">Benefits</button>
+      <button type="button" class="nav-pill-btn" data-nav="contact">Contact</button>
+    </nav>
+
+    <!-- Right: Admin Login Pill Button & System Status -->
+    <div style="display:flex; align-items:center; gap:16px;">
+      <button type="button" id="btn-admin-login-pill" class="btn-admin-login-pill" title="Admin Portal & New Voter Registration">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>Admin Login</span>
+      </button>
+
+      <div class="app-header__status" style="margin-left: 2px;">
+        <div class="app-header__status-item" title="Server Connection">
+          <span id="status-dot-system" class="status-dot status-dot--yellow"></span>
+          <span id="status-text-system" style="font-size:10px;">Connecting...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="app-main" id="app-content">
+
+    <!-- ========== HOME SCREEN ========== -->
+    <section id="screen-home" class="screen">
+      <!-- 16:9 Mathematically Locked Stage Anchor (Locks 1:1 with background-size: cover) -->
+      <div class="home-stage-anchor">
+
+        <!-- 1. Voting Center Lintel Sign over Entrance -->
+        <div class="voting-center-lintel">
+          VOTING CENTER
+        </div>
+
+        <!-- 2. Left Column: Tagline, 2-Line Headline, Desc, 3 Distinct Feature Cards -->
+        <div class="home-hero-left">
+          <div class="home-tagline">
+            <span>SECURE</span>
+            <span class="tagline-dot">•</span>
+            <span>TRANSPARENT</span>
+            <span class="tagline-dot">•</span>
+            <span>INCLUSIVE</span>
+          </div>
+
+          <h1 class="home-hero-title">
+            <span class="title-line-1">Your Vote</span>
+            <span class="title-line-2"><span class="text-accent-blue">A Stronger</span> Nation</span>
+          </h1>
+
+          <p class="home-hero-desc">
+            TriVote uses advanced biometric authentication to ensure a fair, secure and transparent voting process for everyone.
+          </p>
+
+          <div class="home-feature-cards">
+            <!-- Card 1: Verified Identity (Blue Shield) -->
+            <div class="home-feature-card" title="Multi-Modal Biometric Verification">
+              <div class="feature-card-icon icon-shield">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+              </div>
+              <div class="feature-card-text">
+                <span>Verified</span>
+                <span>Identity</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Fair Elections (Cyan Users) -->
+            <div class="home-feature-card" title="One Citizen, One Ballot Integrity">
+              <div class="feature-card-icon icon-users">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <div class="feature-card-text">
+                <span>Fair</span>
+                <span>Elections</span>
+              </div>
+            </div>
+
+            <!-- Card 3: Transparent Democracy (Amber Chart) -->
+            <div class="home-feature-card" title="Auditable Cryptographic Ledger">
+              <div class="feature-card-icon icon-chart">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                  <polyline points="3 8 12 3 21 8"></polyline>
+                </svg>
+              </div>
+              <div class="feature-card-text">
+                <span>Transparent</span>
+                <span>Democracy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Center Glowing Enter Capsule Button -->
+        <div class="home-enter-anchor">
+          <button id="btn-enter-voting" class="home-enter-btn" type="button" aria-label="Enter Voting Center to Authenticate and Vote">
+            <span>Enter</span>
+            <svg class="enter-btn-arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 4. Right Glass Standee Kiosk with India Map -->
+        <div class="home-standee-anchor">
+          <div class="home-glass-standee">
+            <svg viewBox="0 0 100 116" class="standee-map-svg" width="84" height="98" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Official Map of India Silhouette">
+              <path d="M 25.7,6.0 L 27.8,6.5 L 27.9,7.3 L 28.8,7.2 L 31.6,9.3 L 32.1,10.4 L 34.1,11.8 L 39.6,10.0 L 41.8,12.0 L 42.2,11.5 L 42.9,11.8 L 41.8,14.6 L 40.1,15.5 L 39.8,17.1 L 38.3,17.2 L 38.9,18.4 L 38.3,18.5 L 38.4,19.3 L 39.8,20.0 L 40.3,21.8 L 38.5,23.1 L 37.8,21.8 L 36.8,22.4 L 37.9,24.3 L 37.9,26.7 L 38.9,26.2 L 39.9,27.8 L 41.2,28.0 L 42.3,29.4 L 44.7,30.5 L 42.7,32.3 L 41.8,35.6 L 47.3,39.1 L 49.8,39.6 L 49.9,40.4 L 51.6,41.0 L 51.8,40.5 L 53.3,40.9 L 54.1,40.3 L 57.3,43.0 L 58.6,42.6 L 59.2,43.7 L 60.7,43.5 L 61.9,44.3 L 62.9,43.7 L 63.7,44.5 L 65.4,44.0 L 65.7,44.5 L 66.3,43.1 L 65.7,41.8 L 66.1,38.9 L 67.6,38.2 L 68.4,39.1 L 68.0,41.7 L 69.1,42.9 L 77.9,42.7 L 77.8,40.5 L 76.7,40.5 L 76.7,39.5 L 79.1,39.3 L 79.8,38.1 L 85.7,34.0 L 87.6,34.8 L 90.0,33.6 L 91.7,36.0 L 91.0,36.8 L 91.9,36.4 L 94.0,38.6 L 92.5,40.0 L 93.2,41.9 L 91.9,40.8 L 90.5,41.2 L 87.2,43.6 L 87.3,45.5 L 85.7,47.9 L 85.9,49.6 L 84.2,53.5 L 81.8,52.6 L 81.9,56.0 L 81.1,56.4 L 81.4,59.2 L 80.5,60.3 L 79.9,59.5 L 79.6,60.2 L 78.6,53.9 L 77.6,53.9 L 76.6,56.7 L 75.2,54.3 L 75.9,52.5 L 77.5,52.4 L 79.0,49.2 L 71.2,48.3 L 71.4,46.0 L 70.8,44.9 L 70.5,45.9 L 69.8,45.7 L 69.0,44.3 L 68.4,44.3 L 68.9,44.9 L 67.7,44.8 L 66.9,43.5 L 67.3,44.5 L 66.2,45.2 L 66.0,46.4 L 68.7,48.4 L 67.0,48.6 L 65.7,50.5 L 67.9,51.9 L 67.4,54.2 L 68.1,54.7 L 67.9,55.6 L 68.7,55.7 L 68.3,56.5 L 69.0,61.4 L 67.9,61.3 L 67.6,59.8 L 66.5,61.7 L 66.3,59.6 L 65.8,59.3 L 66.3,59.7 L 65.1,61.2 L 62.4,62.5 L 62.3,64.5 L 62.9,64.7 L 60.8,67.4 L 56.8,69.4 L 54.1,73.3 L 48.6,77.9 L 48.6,79.6 L 45.4,80.5 L 44.4,82.6 L 43.7,82.0 L 42.4,82.8 L 41.8,84.9 L 42.7,91.3 L 40.9,97.1 L 41.3,102.0 L 39.5,102.2 L 38.3,104.9 L 39.2,105.7 L 36.4,106.6 L 35.8,108.9 L 34.2,110.0 L 31.2,107.0 L 29.2,99.1 L 27.2,95.9 L 25.1,87.9 L 21.9,81.4 L 20.1,71.9 L 20.7,70.8 L 20.5,70.2 L 20.0,71.2 L 20.2,69.0 L 19.5,67.9 L 20.3,64.5 L 19.3,62.6 L 20.3,61.3 L 19.1,61.3 L 19.8,60.2 L 19.1,60.2 L 19.3,59.4 L 20.3,59.1 L 18.5,59.0 L 17.9,63.0 L 14.0,64.8 L 12.0,63.5 L 8.3,59.0 L 8.7,58.4 L 9.2,59.2 L 12.0,58.2 L 12.9,56.6 L 12.2,56.3 L 10.6,57.5 L 9.1,57.1 L 6.8,54.7 L 7.9,53.4 L 6.0,54.3 L 6.6,53.0 L 7.7,53.0 L 7.9,51.8 L 11.6,52.3 L 13.2,51.4 L 13.7,52.2 L 14.9,51.5 L 13.5,46.8 L 12.3,46.8 L 11.8,46.0 L 12.0,43.8 L 10.0,43.1 L 10.3,41.5 L 12.6,38.6 L 14.1,39.7 L 17.2,38.7 L 18.7,35.8 L 20.4,34.9 L 21.7,31.6 L 23.5,30.7 L 23.4,29.7 L 25.6,27.6 L 25.1,27.4 L 25.4,24.7 L 27.7,23.5 L 26.9,22.6 L 25.6,22.5 L 25.7,21.2 L 24.7,21.5 L 22.4,20.3 L 21.7,15.7 L 23.9,13.1 L 22.8,12.7 L 22.9,11.6 L 21.8,11.6 L 21.1,10.4 L 19.1,10.3 L 19.2,9.1 L 20.7,7.4 L 23.1,7.4 L 22.5,6.7 L 23.7,6.9 Z" />
+              <circle cx="34.2" cy="38.5" r="1.6" fill="currentColor"/>
+            </svg>
+
+            <div class="standee-text">
+              <div class="standee-line">YOUR IDENTITY</div>
+              <div class="standee-line">YOUR VOTE</div>
+              <div class="standee-line standee-accent">A BRIGHTER TOMORROW</div>
+            </div>
+          </div>
+          <div class="standee-base"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== REGISTER SCREEN ========== -->
+    <section id="screen-register" class="screen">
+      <!-- Back Button -->
+      <button id="register-back" class="back-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Home
+      </button>
+
+      <!-- Title Row -->
+      <div class="flex-between mb-6">
+        <h2 class="text-2xl font-bold" style="letter-spacing:1px;">VOTER REGISTRATION</h2>
+        <span id="register-step-indicator" class="step-indicator">Step 1 of 4</span>
+      </div>
+
+      <!-- Resume / Lookup Incomplete Registration Banner -->
+      <div id="register-resume-bar" class="card mb-6" style="background: rgba(30, 41, 59, 0.45); border: 1px dashed var(--color-border); padding: 12px 18px;">
+        <div class="flex-between" style="gap: 12px; flex-wrap: wrap;">
+          <div style="font-size: var(--text-sm);">
+            <span class="text-secondary">Stopped midway or updating biometrics?</span>
+            <strong class="text-primary ml-1">Resume with Voter ID:</strong>
+          </div>
+          <div class="flex" style="gap: 8px; align-items: center;">
+            <input id="reg-lookup-id" type="text" class="form-input" placeholder="VTR-YYYYMMDD-NNN" style="max-width: 190px; padding: 6px 12px; font-size: var(--text-xs); text-transform: uppercase;">
+            <button id="btn-reg-lookup" type="button" class="btn btn-outline btn-sm">RESUME PROGRESS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Personal Information -->
+      <div id="register-step-1" class="register-step-panel" style="display:block;">
+        <div class="two-columns">
+          <div>
+            <div class="section-title">Personal Information</div>
+            <div class="card">
+              <div class="input-group">
+                <label class="form-label" for="reg-name">Full Name</label>
+                <input id="reg-name" type="text" class="form-input" placeholder="Enter your full legal name" autocomplete="name">
+              </div>
+              <div class="input-group">
+                <label class="form-label" for="reg-dob">Date of Birth</label>
+                <input id="reg-dob" type="date" class="form-input">
+              </div>
+              <div class="input-group">
+                <label class="form-label" for="reg-address">Address</label>
+                <input id="reg-address" type="text" class="form-input" placeholder="Enter your residential address" autocomplete="street-address">
+              </div>
+              <div class="input-group">
+                <label class="form-label" for="reg-phone">Phone Number</label>
+                <input id="reg-phone" type="tel" class="form-input" placeholder="Enter your phone number" autocomplete="tel">
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title">Registration Instructions</div>
+            <div class="card-elevated" style="padding:var(--space-8);">
+              <h3 class="text-lg font-semibold mb-4">Registration Process</h3>
+              <div class="flex-col gap-4" style="color:var(--color-text-secondary);font-size:var(--text-sm);line-height:1.8;">
+                <p><strong class="text-primary">Step 1:</strong> Provide your personal information in the form.</p>
+                <p><strong class="text-primary">Step 2:</strong> Capture 5 facial images for biometric enrollment.</p>
+                <p><strong class="text-primary">Step 3:</strong> Scan your fingerprint on the sensor pad.</p>
+                <p><strong class="text-primary">Step 4:</strong> Complete an iris scan for final biometric enrollment.</p>
+              </div>
+              <div style="margin-top:var(--space-6);padding:var(--space-4);background:var(--color-primary-muted);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--color-primary);">
+                All biometric data is encrypted at rest and in transit. Your information is stored locally on this terminal only.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Face Capture -->
+      <div id="register-step-2" class="register-step-panel" style="display:none;">
+        <div class="two-columns">
+          <div>
+            <div class="section-title">Facial Biometric Capture</div>
+            <div class="card">
+              <p class="text-secondary text-sm mb-4">Position your face within the frame. Ensure good lighting and a neutral expression. We will capture 5 images.</p>
+              <div id="face-capture-count" class="text-lg font-semibold font-mono mb-4" style="color:var(--color-primary);">Captures: 0/5</div>
+              <p class="text-xs text-muted">Assigned Voter ID:</p>
+              <p id="reg-voter-id" class="voter-id mt-2">Pending...</p>
+            </div>
+          </div>
+          <div>
+            <div class="camera-container" style="margin-bottom:var(--space-4);">
+              <video id="reg-face-video" autoplay playsinline muted></video>
+              <canvas id="reg-face-overlay"></canvas>
+            </div>
+            <button id="btn-face-capture" class="btn btn-primary btn-block">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              CAPTURE
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Fingerprint -->
+      <div id="register-step-3" class="register-step-panel" style="display:none;">
+        <div class="two-columns">
+          <div>
+            <div class="section-title">Fingerprint Enrollment</div>
+            <div class="card">
+              <p class="text-secondary text-sm mb-4">Place your right index finger firmly on the sensor pad. Hold steady until the scan is complete.</p>
+              <p id="fp-status-text" class="text-sm font-medium mt-4" style="color:var(--color-cyan);">Waiting for scan...</p>
+              <button id="btn-fp-scan" class="btn btn-primary btn-block mt-6">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"></path><path d="M5 19.5C5.5 18 6 15 6 12c0-3.5 2.5-6 6-6"></path><path d="M12 12c0 4-1 8-4 12"></path><path d="M18 12c0 4-1.5 8-4 12"></path><path d="M22 12c0 4-2 8-5 11"></path><path d="M12 6c3.5 0 6 2.5 6 6"></path></svg>
+                BEGIN SCAN (HARDWARE SENSOR)
+              </button>
+              <button id="btn-fp-virtual" type="button" class="btn btn-outline btn-block mt-3" style="font-size:var(--text-xs);letter-spacing:0.5px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                ENROLL VIA BIOMETRIC ENGINE (GUEST / FRIEND)
+              </button>
+              <div id="fp-help-tip" class="text-xs text-muted mt-3" style="line-height:1.4;">
+                <span class="text-secondary">Note:</span> Hardware sensor verifies fingers saved in this laptop's Windows Hello. For friends or demo voters not saved in your Windows account, use the Biometric Engine.
+              </div>
+            </div>
+          </div>
+          <div>
+            <div id="reg-fp-canvas" class="three-container" style="height:400px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Iris -->
+      <div id="register-step-4" class="register-step-panel" style="display:none;">
+        <div class="two-columns">
+          <div>
+            <div class="section-title">Iris Scan Enrollment</div>
+            <div class="card">
+              <p class="text-secondary text-sm mb-4">Look directly at the scanner. Keep your eyes open and remain still during the capture process.</p>
+              <p id="iris-status-text" class="text-sm font-medium mt-4" style="color:var(--color-cyan);">Waiting for scan...</p>
+              <button id="btn-iris-scan" class="btn btn-primary btn-block mt-6">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                BEGIN IRIS SCAN
+              </button>
+            </div>
+          </div>
+          <div>
+            <div id="reg-iris-canvas" class="three-container" style="height:400px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Registration Complete Summary -->
+      <div id="register-step-5" class="register-step-panel" style="display:none;">
+        <div style="max-width:640px;margin:0 auto;text-align:center;">
+          <div class="decision-display animate-scale-in mb-6">
+            <div class="decision-display__icon decision-display__icon--success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="decision-display__text decision-display__text--success">REGISTRATION COMPLETE</div>
+          </div>
+
+          <div class="card mb-6" style="text-align:left;">
+            <div class="section-title">Assigned Voter Credentials</div>
+            <div class="flex-between" style="border-bottom:1px solid var(--color-border);padding-bottom:var(--space-3);margin-bottom:var(--space-3);">
+              <span class="text-secondary text-sm">Voter Identification Number:</span>
+              <span id="summary-reg-voter-id" class="voter-id text-lg font-bold" style="color:var(--color-primary-light);">Pending</span>
+            </div>
+            <div class="flex-between" style="border-bottom:1px solid var(--color-border);padding-bottom:var(--space-3);margin-bottom:var(--space-3);">
+              <span class="text-secondary text-sm">Registered Name:</span>
+              <span id="summary-reg-name" class="font-medium">-</span>
+            </div>
+            <div class="flex-between" style="border-bottom:1px solid var(--color-border);padding-bottom:var(--space-3);margin-bottom:var(--space-3);">
+              <span class="text-secondary text-sm">Facial Biometrics:</span>
+              <span id="summary-reg-face" class="badge badge-success">Enrolled (5 Frames)</span>
+            </div>
+            <div class="flex-between" style="border-bottom:1px solid var(--color-border);padding-bottom:var(--space-3);margin-bottom:var(--space-3);">
+              <span class="text-secondary text-sm">Fingerprint Biometrics:</span>
+              <span id="summary-reg-fp" class="badge badge-success">Enrolled (Hardware Sensor)</span>
+            </div>
+            <div class="flex-between">
+              <span class="text-secondary text-sm">Iris Biometrics:</span>
+              <span id="summary-reg-iris" class="badge badge-success">Enrolled (Daugman Code)</span>
+            </div>
+          </div>
+
+          <div class="flex gap-4 justify-center">
+            <button id="btn-reg-home" class="btn btn-primary btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              RETURN TO HOME
+            </button>
+            <button id="btn-reg-authenticate" class="btn btn-outline btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              PROCEED TO AUTHENTICATION
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div id="register-nav-buttons" class="flex-between" style="margin-top:var(--space-8);">
+        <button id="register-prev" class="btn btn-outline" style="visibility:hidden;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          BACK
+        </button>
+        <button id="register-next" class="btn btn-primary">
+          NEXT STEP
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ========== AUTHENTICATE SCREEN ========== -->
+    <section id="screen-authenticate" class="screen">
+      <!-- Back Button -->
+      <button id="auth-back" class="back-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Home
+      </button>
+
+      <h2 class="text-2xl font-bold mb-6" style="letter-spacing:1px;">VOTER AUTHENTICATION</h2>
+
+      <!-- Voter ID Input (Stage 0) -->
+      <div id="auth-stage-0" class="auth-stage" style="display:flex;flex-direction:column;align-items:center;gap:var(--space-4);">
+        <div class="card" style="max-width:480px;width:100%;">
+          <div class="section-title">Voter Identification</div>
+          <div class="flex gap-3">
+            <input id="auth-voter-id" type="text" class="form-input" placeholder="Enter Voter ID" style="font-family:var(--font-mono);letter-spacing:1px;">
+            <button id="btn-verify-voter" class="btn btn-primary">VERIFY</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Stepper -->
+      <div id="auth-stepper" style="margin:var(--space-8) 0 var(--space-6) 0;padding-bottom:var(--space-6);"></div>
+
+      <!-- Stage 1: Face Auth -->
+      <div id="auth-stage-1" class="auth-stage biometric-stage" style="display:none;">
+        <p class="biometric-stage__instruction">Position your face within the camera frame</p>
+        <div class="camera-container" style="max-width:520px;">
+          <video id="auth-face-video" autoplay playsinline muted></video>
+          <canvas id="auth-face-overlay"></canvas>
+          <div class="camera-container__status">Detecting face...</div>
+        </div>
+        <button id="btn-auth-face-scan" class="btn btn-primary mt-4">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          VERIFY FACE
+        </button>
+      </div>
+
+      <!-- Stage 2: Fingerprint Auth -->
+      <div id="auth-stage-2" class="auth-stage biometric-stage" style="display:none;">
+        <p class="biometric-stage__instruction">Place your registered finger on the sensor</p>
+        <div id="auth-fp-canvas" class="three-container" style="height:400px;max-width:520px;width:100%;"></div>
+        <p id="auth-fp-status" class="text-sm font-medium" style="color:var(--color-cyan);">Waiting for sensor touch...</p>
+        <div class="flex gap-3 mt-4" style="width:100%;max-width:500px;">
+          <button id="btn-auth-fp-scan" class="btn btn-primary" style="flex:1;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"></path><path d="M5 19.5C5.5 18 6 15 6 12c0-3.5 2.5-6 6-6"></path><path d="M12 12c0 4-1 8-4 12"></path><path d="M18 12c0 4-1.5 8-4 12"></path><path d="M22 12c0 4-2 8-5 11"></path><path d="M12 6c3.5 0 6 2.5 6 6"></path></svg>
+            TOUCH SENSOR NOW
+          </button>
+          <button id="btn-auth-fp-impostor" class="btn btn-outline" style="border-color:var(--color-danger);color:var(--color-danger);flex:1;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            TEST UNMATCHED FINGER
+          </button>
+        </div>
+      </div>
+
+      <!-- Stage 3: Iris Auth -->
+      <div id="auth-stage-3" class="auth-stage biometric-stage" style="display:none;">
+        <p class="biometric-stage__instruction">Look directly at the scanner</p>
+        <div id="auth-iris-canvas" class="three-container" style="height:400px;max-width:520px;width:100%;"></div>
+        <p id="auth-iris-status" class="text-sm font-medium" style="color:var(--color-cyan);">Waiting for scan...</p>
+        <button id="btn-auth-iris-scan" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          SCAN IRIS
+        </button>
+      </div>
+
+      <!-- Stage 4: Result -->
+      <div id="auth-stage-4" class="auth-stage" style="display:none;flex-direction:column;align-items:center;">
+        <div class="decision-display animate-scale-in">
+          <div id="auth-result-icon" class="decision-display__icon decision-display__icon--success">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+          <div id="auth-result-text" class="decision-display__text decision-display__text--success">AUTHENTICATED</div>
+        </div>
+
+        <p id="auth-rejection-msg" class="text-sm text-center mt-2" style="color:var(--color-danger);max-width:480px;display:none;"></p>
+
+        <!-- Score Gauges -->
+        <div class="grid-2" style="max-width:600px;width:100%;margin-top:var(--space-8);">
+          <div id="gauge-face"></div>
+          <div id="gauge-fingerprint"></div>
+          <div id="gauge-iris"></div>
+          <div id="gauge-fusion"></div>
+        </div>
+
+        <div class="flex gap-4 mt-8">
+          <button id="btn-proceed-vote" class="btn btn-success btn-lg" style="display:none;">
+            PROCEED TO VOTE
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+          <button id="btn-auth-retry" class="btn btn-outline btn-lg" style="display:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            RE-AUTHENTICATE
+          </button>
+          <button id="btn-auth-return-home" class="btn btn-ghost btn-lg" style="display:none;">
+            RETURN TO HOME
+          </button>
+        </div>
+      </div>
+
+      <!-- Score Summary Bar -->
+      <div class="score-summary">
+        <div class="score-summary__item">
+          <span>Face:</span>
+          <span id="summary-face" class="score-summary__value">N/A</span>
+        </div>
+        <div class="score-summary__separator"></div>
+        <div class="score-summary__item">
+          <span>Fingerprint:</span>
+          <span id="summary-fingerprint" class="score-summary__value">N/A</span>
+        </div>
+        <div class="score-summary__separator"></div>
+        <div class="score-summary__item">
+          <span>Iris:</span>
+          <span id="summary-iris" class="score-summary__value">N/A</span>
+        </div>
+        <div class="score-summary__separator"></div>
+        <div class="score-summary__item">
+          <span>Fusion:</span>
+          <span id="summary-fusion" class="score-summary__value">N/A</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== VOTE SCREEN ========== -->
+    <section id="screen-vote" class="screen">
+
+      <!-- Ballot Section -->
+      <div id="vote-ballot-section">
+        <div class="flex-between mb-2">
+          <h2 class="text-2xl font-bold" style="letter-spacing:1px;">OFFICIAL BALLOT</h2>
+          <span class="text-sm text-secondary">General Election, October 2026</span>
+        </div>
+
+        <p class="text-secondary mb-6">SELECT ONE CANDIDATE</p>
+
+        <!-- Candidate Cards -->
+        <div id="candidates-list" class="flex-col gap-3" style="max-width:640px;" role="radiogroup" aria-label="Candidate selection">
+          <p class="text-secondary text-center">Loading candidates...</p>
+        </div>
+
+        <!-- Cast Vote Button -->
+        <div class="text-center" style="margin-top:var(--space-8);">
+          <button id="btn-cast-vote" class="btn btn-primary btn-lg" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            CAST YOUR VOTE
+          </button>
+        </div>
+      </div>
+
+      <!-- Receipt Section (hidden initially) -->
+      <div id="vote-receipt-section" style="display:none;">
+        <div class="receipt-card">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-4);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <h2 class="text-2xl font-bold text-green mb-4">VOTE RECORDED SUCCESSFULLY</h2>
+          <div id="receipt-hash" class="receipt-card__hash">Receipt: --------</div>
+          <p id="receipt-time" class="text-sm text-secondary mb-2">----</p>
+          <p class="text-xs text-muted">Voter ID: <span id="receipt-voter-id" class="voter-id">----</span></p>
+          <button id="btn-vote-home" class="btn btn-outline mt-8">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            RETURN TO HOME
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmation Modal -->
+      <div id="vote-confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+          <h3 class="modal-content__title">Confirm Your Vote</h3>
+          <div class="modal-content__body">
+            <p>You are about to cast your final ballot. This action is final and cannot be undone.</p>
+            <div style="margin-top:var(--space-4);padding:var(--space-4);background:var(--color-canvas);border-radius:var(--radius-md);">
+              <p class="text-xs text-secondary uppercase" style="letter-spacing:1px;">Selected Candidate</p>
+              <p id="confirm-candidate-name" class="text-lg font-semibold mt-2">--</p>
+            </div>
+          </div>
+          <div class="modal-content__actions">
+            <button id="btn-review-choices" class="btn btn-outline">REVIEW CHOICES</button>
+            <button id="btn-confirm-vote" class="btn btn-success">CONFIRM VOTE</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ADMIN SCREEN ========== -->
+    <section id="screen-admin" class="screen">
+      <!-- Back Button -->
+      <button id="admin-back" class="back-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Home
+      </button>
+
+      <!-- Admin Title & Quick Register Action -->
+      <div class="flex-between mb-6" style="align-items: center; flex-wrap: wrap; gap: 14px;">
+        <h2 class="text-2xl font-bold" style="letter-spacing:1px; margin: 0;">ADMINISTRATION PANEL</h2>
+        <button id="btn-admin-add-voter" class="btn btn-primary" type="button" style="display:inline-flex; align-items:center; gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          REGISTER NEW VOTER
+        </button>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid-4 mb-8 stagger-enter">
+        <div class="stat-card">
+          <div class="stat-card__label">Registered Voters</div>
+          <div id="stat-registered" class="stat-card__value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Votes Cast</div>
+          <div id="stat-votes" class="stat-card__value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Auth Success Rate</div>
+          <div id="stat-success-rate" class="stat-card__value">0%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Auth Failures</div>
+          <div id="stat-failures" class="stat-card__value">0</div>
+        </div>
+      </div>
+
+      <!-- Authentication Log -->
+      <div class="section-title">Authentication Log</div>
+      <div class="card mb-8" style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Voter ID</th>
+              <th>Face</th>
+              <th>Fingerprint</th>
+              <th>Iris</th>
+              <th>Fusion</th>
+              <th>Decision</th>
+            </tr>
+          </thead>
+          <tbody id="auth-log-body">
+            <tr><td colspan="7" class="text-center text-secondary" style="padding:24px;">No authentication records.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bottom Two-Column Section -->
+      <div class="grid-2">
+        <!-- Election Results -->
+        <div>
+          <div class="section-title">Election Results</div>
+          <div class="card">
+            <div id="vote-tally-chart">
+              <p class="text-secondary">No votes recorded.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Voter Status -->
+        <div>
+          <div class="section-title">Voter Status</div>
+          <div class="card" style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Voter ID</th>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Time</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="voter-status-body">
+                <tr><td colspan="5" class="text-center text-secondary" style="padding:24px;">No voters registered.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       MODALS: Admin Access Portal & Nav Information
+       ============================================================ -->
+
+  <!-- Modal: Admin Portal Access (Register New Voter or Dashboard) -->
+  <div id="modal-admin-choice" class="glass-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+    <div class="glass-modal-card">
+      <button type="button" class="modal-close-btn" id="btn-close-admin-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+        <div style="width:38px; height:38px; border-radius:10px; background:rgba(59,130,246,0.18); border:1px solid rgba(59,130,246,0.35); display:flex; align-items:center; justify-content:center; color:#60a5fa;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <div>
+          <h3 id="admin-modal-title" class="text-xl font-bold" style="color:#ffffff; margin:0; letter-spacing:0.5px;">ADMINISTRATION PORTAL</h3>
+          <p class="text-xs text-secondary" style="margin:2px 0 0 0;">Authorized Election Officers & Technical Supervisors</p>
+        </div>
+      </div>
+
+      <div class="admin-modal-choice-grid">
+        <!-- Choice 1: Register New Voter -->
+        <div id="choice-admin-register" class="admin-choice-card">
+          <div class="admin-choice-icon" style="background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.35); color:#10b981;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          </div>
+          <div class="admin-choice-title">REGISTER NEW CITIZEN</div>
+          <p class="admin-choice-desc">Enroll demographic credentials and capture Face, Fingerprint, and Iris biometrics.</p>
+          <button type="button" class="btn btn-outline btn-sm btn-block" style="border-color:#10b981; color:#10b981; margin-top:auto;">START REGISTRATION</button>
+        </div>
+
+        <!-- Choice 2: Admin Dashboard -->
+        <div id="choice-admin-dashboard" class="admin-choice-card">
+          <div class="admin-choice-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          </div>
+          <div class="admin-choice-title">ELECTION CONTROL PANEL</div>
+          <p class="admin-choice-desc">View turnout statistics, biometric auth audit logs, and live candidate vote tallies.</p>
+          <button type="button" class="btn btn-primary btn-sm btn-block" style="margin-top:auto;">OPEN DASHBOARD</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: General Navigation Info (About / Process / Benefits / Contact) -->
+  <div id="modal-nav-info" class="glass-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="nav-info-title">
+    <div class="glass-modal-card nav-info-modal-card">
+      <button type="button" class="modal-close-btn" id="btn-close-nav-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <!-- Institutional Header -->
+      <div class="nav-info-modal-header">
+        <div class="nav-info-brand-badge">
+          <svg width="26" height="18" viewBox="0 0 38 28" fill="none" class="tricolor-ribbon-svg" aria-label="Indian Tricolor Ribbon Emblem">
+            <path d="M2,7 C10,2 18,12 28,6 C31,4 35,5 37,7 L37,12 C28,17 18,7 10,12 C6,14 4,13 2,11 Z" fill="#FF9933"/>
+            <path d="M2,11 C10,6 18,16 28,10 C31,8 35,9 37,11 L37,17 C28,22 18,12 10,17 C6,19 4,18 2,16 Z" fill="#FFFFFF"/>
+            <circle cx="20" cy="14" r="2.2" fill="#000080"/>
+            <circle cx="20" cy="14" r="0.9" fill="#FFFFFF"/>
+            <path d="M2,16 C10,11 18,21 28,15 C31,13 35,14 37,16 L37,22 C28,27 18,17 10,22 C6,24 4,23 2,21 Z" fill="#138808"/>
+          </svg>
+          <span class="nav-info-badge-tag">ELECTION COMMISSION OF INDIA • OFFICIAL TERMINAL</span>
+        </div>
+        <h2 id="nav-info-title" class="nav-info-title">TRIVOTE PLATFORM SPECIFICATION</h2>
+        <p id="nav-info-subtitle" class="nav-info-subtitle">Multi-Modal Biometric Voter Authentication & Verification Architecture</p>
+      </div>
+
+      <!-- Modern Glass Tab Navigation Bar -->
+      <div class="nav-info-tabs-bar" role="tablist">
+        <button type="button" class="nav-info-tab-pill active" data-tab="about">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>About System</span>
+        </button>
+        <button type="button" class="nav-info-tab-pill" data-tab="process">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          <span>Biometric Process</span>
+        </button>
+        <button type="button" class="nav-info-tab-pill" data-tab="benefits">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+          <span>Key Benefits</span>
+        </button>
+        <button type="button" class="nav-info-tab-pill" data-tab="contact">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span>Precinct Support</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div id="nav-info-body" class="nav-info-body">
+        <!-- Injected dynamically via home.js -->
+      </div>
+
+      <!-- Footer Bar -->
+      <div class="nav-info-modal-footer">
+        <div class="nav-info-footer-status">
+          <span class="status-dot status-dot--green"></span>
+          <span>Sovereign Offline Vault • Zero Cloud Leakage • AES-256 Ledger</span>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-close-nav-modal-btn">CLOSE BRIEFING</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="app-footer">
+    <div class="app-footer__item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <span>Encrypted Session</span>
+    </div>
+    <div class="app-footer__separator"></div>
+    <div class="app-footer__item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      <span>All data stored locally</span>
+    </div>
+    <div class="app-footer__separator"></div>
+    <div class="app-footer__item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <span id="footer-timestamp">----</span>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       SCRIPTS
+       ============================================================ -->
+  <!-- Non-module scripts (global classes and utilities) -->
+  <script src="/static/js/websocket.js?v=20261102a"></script>
+  <script src="/static/js/camera.js?v=20261102a"></script>
+  <script src="/static/js/components/progress-stepper.js?v=20261102a"></script>
+  <script src="/static/js/components/score-gauge.js?v=20261102a"></script>
+  <script src="/static/js/components/notification.js?v=20261102a"></script>
+
+  <!-- Three.js scene modules -->
+  <script type="module" src="/static/js/three-scenes/particles.js?v=20261102a"></script>
+  <script type="module" src="/static/js/three-scenes/hero-scene.js?v=20261102a"></script>
+  <script type="module" src="/static/js/three-scenes/fingerprint-scene.js?v=20261102a"></script>
+  <script type="module" src="/static/js/three-scenes/iris-scene.js?v=20261102a"></script>
+
+  <!-- Screen logic (depends on components and Three.js classes) -->
+  <script src="/static/js/screens/home.js?v=20261102a"></script>
+  <script src="/static/js/screens/register.js?v=20261102a"></script>
+  <script src="/static/js/screens/authenticate.js?v=20261102a"></script>
+  <script src="/static/js/screens/vote.js?v=20261102a"></script>
+  <script src="/static/js/screens/admin.js?v=20261102a"></script>
+
+  <!-- Main app controller (last) -->
+  <script src="/static/js/app.js?v=20261102a"></script>
+
+</body>
+</html>

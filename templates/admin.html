@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TriVote Administration Dashboard">
+  <title>TriVote — Administration Panel</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/animations.css">
+
+  <!-- Socket.IO Client -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <header class="app-header">
+    <div class="app-header__brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-primary)">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+      <span class="app-header__logo">TRIVOTE</span>
+      <div class="app-header__divider"></div>
+      <span class="app-header__subtitle">Administration Dashboard</span>
+    </div>
+    <div class="app-header__status">
+      <div class="app-header__status-item">
+        <span id="admin-status-dot" class="status-dot status-dot--red"></span>
+        <span>System:</span>
+        <span id="admin-status-text">Connecting...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="app-main">
+    <div class="container container-lg">
+
+      <!-- Admin Title & Action Button -->
+      <div class="flex-between mb-6" style="align-items: center; flex-wrap: wrap; gap: 14px;">
+        <h2 class="text-2xl font-bold" style="letter-spacing:1px; margin: 0;">ADMINISTRATION PANEL</h2>
+        <a href="/?screen=register" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          REGISTER NEW VOTER
+        </a>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid-4 mb-8 stagger-enter">
+        <div class="stat-card">
+          <div class="stat-card__label">Registered Voters</div>
+          <div id="admin-stat-registered" class="stat-card__value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Votes Cast</div>
+          <div id="admin-stat-votes" class="stat-card__value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Auth Success Rate</div>
+          <div id="admin-stat-success-rate" class="stat-card__value">0%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Auth Failures</div>
+          <div id="admin-stat-failures" class="stat-card__value">0</div>
+        </div>
+      </div>
+
+      <!-- Authentication Log -->
+      <div class="section-title">Authentication Log</div>
+      <div class="card mb-8" style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Voter ID</th>
+              <th>Face Score</th>
+              <th>Fingerprint Score</th>
+              <th>Iris Score</th>
+              <th>Fusion Score</th>
+              <th>Decision</th>
+            </tr>
+          </thead>
+          <tbody id="admin-auth-log-body">
+            <tr><td colspan="7" class="text-center text-secondary" style="padding:24px;">No authentication records.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bottom Two-Column Section -->
+      <div class="grid-2">
+        <!-- Election Results -->
+        <div>
+          <div class="section-title">Election Results</div>
+          <div class="card">
+            <div id="admin-vote-tally-chart">
+              <p class="text-secondary">No votes recorded.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Voter Status -->
+        <div>
+          <div class="section-title">Voter Status</div>
+          <div class="card" style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Voter ID</th>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Time</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-voter-status-body">
+                <tr><td colspan="5" class="text-center text-secondary" style="padding:24px;">No voters registered.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="app-footer">
+    <div class="app-footer__item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <span>Encrypted Session</span>
+    </div>
+    <div class="app-footer__separator"></div>
+    <div class="app-footer__item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <span id="admin-footer-timestamp">----</span>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       SCRIPTS — Standalone Admin
+       ============================================================ -->
+  <script>
+    (function () {
+      'use strict';
+
+      var socket = null;
+      var adminData = {
+        registeredVoters: 0,
+        votesCast: 0,
+        authSuccessRate: 0,
+        authFailures: 0,
+        authLog: [],
+        voteTally: [],
+        voters: []
+      };
+
+      function connect() {
+        socket = io({
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 20,
+          reconnectionDelay: 2000
+        });
+
+        socket.on('connect', function () {
+          var dot = document.getElementById('admin-status-dot');
+          var text = document.getElementById('admin-status-text');
+          if (dot) dot.className = 'status-dot status-dot--green';
+          if (text) text.textContent = 'Online';
+
+          socket.emit('get_admin_data', {});
+        });
+
+        socket.on('disconnect', function () {
+          var dot = document.getElementById('admin-status-dot');
+          var text = document.getElementById('admin-status-text');
+          if (dot) dot.className = 'status-dot status-dot--red';
+          if (text) text.textContent = 'Offline';
+        });
+
+        socket.on('admin_data', function (data) {
+          adminData = Object.assign(adminData, data);
+          render();
+        });
+
+        socket.on('admin_update', function (data) {
+          adminData = Object.assign(adminData, data);
+          render();
+        });
+
+        socket.on('voter_deleted', function (data) {
+          if (data.success) {
+            socket.emit('get_admin_data', {});
+          }
+        });
+      }
+
+      function render() {
+        setStatValue('admin-stat-registered', adminData.registeredVoters);
+        setStatValue('admin-stat-votes', adminData.votesCast);
+        setStatValue('admin-stat-success-rate', adminData.authSuccessRate + '%');
+        setStatValue('admin-stat-failures', adminData.authFailures);
+        renderAuthLog();
+        renderVoteTally();
+        renderVoterStatus();
+      }
+
+      function setStatValue(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = value;
+      }
+
+      function renderAuthLog() {
+        var tbody = document.getElementById('admin-auth-log-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        var log = adminData.authLog || [];
+        if (log.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary" style="padding:24px;">No authentication records.</td></tr>';
+          return;
+        }
+
+        log.forEach(function (entry) {
+          var tr = document.createElement('tr');
+          var decisionClass = entry.decision === 'AUTHENTICATED' ? 'text-green' : 'text-red';
+          tr.innerHTML =
+            '<td>' + esc(entry.time || '--') + '</td>' +
+            '<td class="mono">' + esc(entry.voter_id || '--') + '</td>' +
+            '<td class="mono">' + fmtScore(entry.face_score) + '</td>' +
+            '<td class="mono">' + fmtScore(entry.fingerprint_score) + '</td>' +
+            '<td class="mono">' + fmtScore(entry.iris_score) + '</td>' +
+            '<td class="mono">' + fmtScore(entry.fusion_score) + '</td>' +
+            '<td class="' + decisionClass + ' font-semibold">' + esc(entry.decision || '--') + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function renderVoteTally() {
+        var container = document.getElementById('admin-vote-tally-chart');
+        if (!container) return;
+        container.innerHTML = '';
+
+        var tally = adminData.voteTally || [];
+        if (tally.length === 0) {
+          container.innerHTML = '<p class="text-secondary">No votes recorded.</p>';
+          return;
+        }
+
+        var maxVotes = 0;
+        tally.forEach(function (item) {
+          if (item.count > maxVotes) maxVotes = item.count;
+        });
+
+        var chart = document.createElement('div');
+        chart.className = 'bar-chart';
+
+        tally.forEach(function (item) {
+          var row = document.createElement('div');
+          row.className = 'bar-chart__row';
+
+          var label = document.createElement('div');
+          label.className = 'bar-chart__label';
+          label.textContent = item.name || 'Unknown';
+
+          var track = document.createElement('div');
+          track.className = 'bar-chart__track';
+
+          var fill = document.createElement('div');
+          fill.className = 'bar-chart__fill';
+          var pct = maxVotes > 0 ? (item.count / maxVotes) * 100 : 0;
+          setTimeout(function () { fill.style.width = pct + '%'; }, 100);
+          track.appendChild(fill);
+
+          var count = document.createElement('div');
+          count.className = 'bar-chart__count';
+          count.textContent = item.count;
+
+          row.appendChild(label);
+          row.appendChild(track);
+          row.appendChild(count);
+          chart.appendChild(row);
+        });
+
+        container.appendChild(chart);
+      }
+
+      function renderVoterStatus() {
+        var tbody = document.getElementById('admin-voter-status-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        var voters = adminData.voters || [];
+        if (voters.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary" style="padding:24px;">No voters registered.</td></tr>';
+          return;
+        }
+
+        voters.forEach(function (voter) {
+          var tr = document.createElement('tr');
+          var statusBadge = voter.status === 'Voted'
+            ? '<span class="badge badge-green">Voted</span>'
+            : '<span class="badge badge-amber">Pending</span>';
+          tr.innerHTML =
+            '<td class="mono">' + esc(voter.voter_id || '--') + '</td>' +
+            '<td>' + esc(voter.name || '--') + '</td>' +
+            '<td>' + statusBadge + '</td>' +
+            '<td>' + esc(voter.time || '--') + '</td>' +
+            '<td></td>';
+
+          var actionCell = tr.querySelector('td:last-child');
+          actionCell.style.display = 'flex';
+          actionCell.style.gap = '6px';
+          actionCell.style.alignItems = 'center';
+
+          if (voter.status !== 'Voted') {
+            var updateBtn = document.createElement('button');
+            updateBtn.className = 'btn btn-outline btn-sm';
+            updateBtn.textContent = 'UPDATE';
+            updateBtn.setAttribute('data-voter-id', voter.voter_id);
+            updateBtn.onclick = function () {
+              var vid = this.getAttribute('data-voter-id');
+              window.location.href = '/?resume=' + encodeURIComponent(vid);
+            };
+            actionCell.appendChild(updateBtn);
+          }
+
+          var deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn btn-danger btn-sm';
+          deleteBtn.textContent = 'DELETE';
+          deleteBtn.setAttribute('data-voter-id', voter.voter_id);
+          deleteBtn.onclick = function () {
+            var vid = this.getAttribute('data-voter-id');
+            if (confirm('Remove voter ' + vid + ' and all associated records? This cannot be undone.')) {
+              this.disabled = true;
+              this.textContent = 'DELETING...';
+              socket.emit('delete_voter', { voter_id: vid });
+            }
+          };
+          actionCell.appendChild(deleteBtn);
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      function fmtScore(score) {
+        if (score === null || score === undefined) return '--';
+        return Number(score).toFixed(1);
+      }
+
+      function esc(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function updateClock() {
+        var tsEl = document.getElementById('admin-footer-timestamp');
+        if (tsEl) {
+          var d = new Date();
+          var y = d.getFullYear();
+          var mo = String(d.getMonth() + 1).padStart(2, '0');
+          var da = String(d.getDate()).padStart(2, '0');
+          var h = String(d.getHours()).padStart(2, '0');
+          var mi = String(d.getMinutes()).padStart(2, '0');
+          var s = String(d.getSeconds()).padStart(2, '0');
+          tsEl.textContent = y + '-' + mo + '-' + da + ' ' + h + ':' + mi + ':' + s;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        connect();
+        updateClock();
+        setInterval(updateClock, 1000);
+      });
+    })();
+  </script>
+
+</body>
+</html>
