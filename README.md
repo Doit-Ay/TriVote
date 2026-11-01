@@ -26,8 +26,7 @@
    - [D. Casting the Ballot](#d-casting-the-ballot)
    - [E. Admin & Audit Dashboard](#e-admin--audit-dashboard)
 9. [Configuration Reference](#configuration-reference)
-10. [Presentation Deck Generator](#presentation-deck-generator)
-11. [Troubleshooting & FAQs](#troubleshooting--faqs)
+10. [Troubleshooting & FAQs](#troubleshooting--faqs)
 
 ---
 
@@ -94,9 +93,7 @@ TriVote/
 │
 ├── app.py                            # Flask + Socket.IO server & event handlers
 ├── config.py                         # System thresholds, weights, and directory paths
-├── generate_presentation.py          # Script generating 16:9 PowerPoint presentation
 ├── requirements.txt                  # Python dependencies
-├── TriVote_Biometric_Voting_System.pptx # Widescreen presentation deck
 │
 ├── biometrics/                       # Biometric algorithmic modules
 │   ├── face_recognition_module.py    # OpenCV Haar Cascade + LBPH recognizer
@@ -264,21 +261,6 @@ Key system settings can be customized in [`config.py`](config.py):
 | `FUSION_WEIGHTS['fingerprint']`| `0.30` | Weight assigned to fingerprint minutiae score |
 | `FUSION_WEIGHTS['iris']` | `0.25` | Weight assigned to iris demodulation score |
 | `FUSION_THRESHOLD` | `0.65` | Minimum composite score required to authorize ballot |
-
----
-
-## Presentation Deck Generator
-
-A PowerPoint presentation generator is included with the project. It builds a 6-slide widescreen (16:9) presentation with custom cyber dark styling.
-
-To rebuild the deck:
-```bash
-python generate_presentation.py
-```
-The generated presentation will be saved as:
-```
-TriVote_Biometric_Voting_System.pptx
-```
 
 ---
 

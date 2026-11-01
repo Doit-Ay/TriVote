@@ -24,6 +24,11 @@ data/face_data/*
 !data/face_data/.gitkeep
 !data/.gitkeep
 
+# Presentation & Scratch Artifacts
+*.pptx
+verify_*.py
+generate_presentation.py
+
 # IDEs & OS Files
 .idea/
 .vscode/
