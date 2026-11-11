@@ -62,8 +62,35 @@
     if (idEl) idEl.textContent = 'Pending';
 
     updateRegisterStep();
+    updateResumeBarVisibility();
     bindRegisterEvents();
     bindRegisterSocketEvents();
+  }
+
+  /**
+   * Toggle visibility of the resume registration section.
+   * Visible ONLY on Step 1 start page when all personal information inputs are empty.
+   * Dynamically removed as soon as user types into any registration field.
+   */
+  function updateResumeBarVisibility() {
+    var resumeBar = document.getElementById('register-resume-bar');
+    if (!resumeBar) return;
+
+    if (currentStep !== 1) {
+      resumeBar.style.display = 'none';
+      return;
+    }
+
+    var nameVal = (document.getElementById('reg-name') && document.getElementById('reg-name').value.trim()) || '';
+    var dobVal = (document.getElementById('reg-dob') && document.getElementById('reg-dob').value.trim()) || '';
+    var addrVal = (document.getElementById('reg-address') && document.getElementById('reg-address').value.trim()) || '';
+    var phoneVal = (document.getElementById('reg-phone') && document.getElementById('reg-phone').value.trim()) || '';
+
+    if (nameVal || dobVal || addrVal || phoneVal) {
+      resumeBar.style.display = 'none';
+    } else {
+      resumeBar.style.display = 'block';
+    }
   }
 
   /**
@@ -78,6 +105,15 @@
     var irisScanBtn = document.getElementById('btn-iris-scan');
     var regHomeBtn = document.getElementById('btn-reg-home');
     var regAuthBtn = document.getElementById('btn-reg-authenticate');
+
+    /* Listen to user details input to dynamically hide resume bar */
+    ['reg-name', 'reg-dob', 'reg-address', 'reg-phone'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', updateResumeBarVisibility);
+        el.addEventListener('change', updateResumeBarVisibility);
+      }
+    });
 
     /* Resume / Lookup handler */
     var regLookupBtn = document.getElementById('btn-reg-lookup');
@@ -283,32 +319,13 @@
       fpScanBtn.onclick = function () {
         if (fingerprintScene) fingerprintScene.setState('scanning');
         var status = document.getElementById('fp-status-text');
-        if (status) status.textContent = 'Touch your laptop fingerprint sensor now (Windows Hello)...';
+        if (status) status.textContent = 'Scanning sensor... Place finger on sensor pad.';
         fpScanBtn.disabled = true;
         fpScanBtn.textContent = 'SCANNING SENSOR...';
-        var fpVirtualBtn = document.getElementById('btn-fp-virtual');
-        if (fpVirtualBtn) fpVirtualBtn.disabled = true;
 
         window.trivoteSocket.emit('capture_fingerprint', {
           voter_id: registrationData.voterId,
           use_virtual: false
-        });
-      };
-    }
-
-    var fpVirtualBtn = document.getElementById('btn-fp-virtual');
-    if (fpVirtualBtn) {
-      fpVirtualBtn.onclick = function () {
-        if (fingerprintScene) fingerprintScene.setState('scanning');
-        var status = document.getElementById('fp-status-text');
-        if (status) status.textContent = 'Extracting ridge minutiae via Biometric Engine...';
-        fpVirtualBtn.disabled = true;
-        fpVirtualBtn.textContent = 'ENROLLING BIOMETRICS...';
-        if (fpScanBtn) fpScanBtn.disabled = true;
-
-        window.trivoteSocket.emit('capture_fingerprint', {
-          voter_id: registrationData.voterId,
-          use_virtual: true
         });
       };
     }
@@ -462,7 +479,6 @@
     window.trivoteSocket.on('fingerprint_status', function (data) {
       var status = document.getElementById('fp-status-text');
       var fpBtn = document.getElementById('btn-fp-scan');
-      var fpVirtualBtn = document.getElementById('btn-fp-virtual');
       var nextBtn = document.getElementById('register-next');
 
       if (data.status === 'captured') {
@@ -470,39 +486,20 @@
         if (status) status.textContent = withModePrefix(data, data.message || 'Fingerprint enrolled successfully.');
         if (fpBtn) {
           fpBtn.disabled = false;
-          fpBtn.textContent = 'RE-SCAN (HARDWARE)';
-        }
-        if (fpVirtualBtn) {
-          fpVirtualBtn.disabled = false;
-          fpVirtualBtn.textContent = 'RE-ENROLL (BIOMETRIC ENGINE)';
-          fpVirtualBtn.className = 'btn btn-outline btn-block mt-3';
+          fpBtn.textContent = 'RETRY SCAN';
         }
         registrationData.fingerprintCaptured = true;
         if (nextBtn && currentStep === 3) nextBtn.disabled = false;
         window.showNotification('Fingerprint enrolled.', 'success');
       } else if (data.status === 'error') {
         if (fingerprintScene) fingerprintScene.setState('error');
-        var isNotEnrolled = data.reason === 'no_match' || data.reason === 'not_enrolled_windows' || String(data.message).indexOf('not recognized') !== -1;
-        var displayMsg = isNotEnrolled
-          ? 'Finger rejected by Windows Hello (not enrolled on this PC). Click the button below to enroll your friend via the Biometric Engine, or add their finger in Windows Settings.'
-          : withModePrefix(data, data.message || 'Capture failed. Try again.');
-
+        var displayMsg = withModePrefix(data, data.message || 'Scan timed out or unreadable. Please retry.');
         if (status) status.textContent = displayMsg;
         if (fpBtn) {
           fpBtn.disabled = false;
-          fpBtn.textContent = 'RETRY SENSOR';
+          fpBtn.textContent = 'RETRY SCAN';
         }
-        if (fpVirtualBtn) {
-          fpVirtualBtn.disabled = false;
-          fpVirtualBtn.textContent = 'ENROLL VIA BIOMETRIC ENGINE (GUEST / FRIEND)';
-          fpVirtualBtn.className = 'btn btn-primary btn-block mt-3';
-        }
-        window.showNotification(
-          isNotEnrolled
-            ? 'Friend not enrolled in Windows Hello. Click [Enroll via Biometric Engine] below.'
-            : (data.message || 'Fingerprint error.'),
-          'warning'
-        );
+        window.showNotification(data.message || 'Fingerprint scan timed out or failed. Please retry.', 'warning');
       } else {
         if (status) status.textContent = withModePrefix(data, data.message || 'Processing...');
       }
@@ -607,6 +604,9 @@
       if (navButtons) navButtons.style.display = 'flex';
     }
 
+    /* Update resume bar visibility */
+    updateResumeBarVisibility();
+
     /* Initialize step-specific features */
     switch (currentStep) {
       case 2:
@@ -667,35 +667,34 @@
 
     var status = document.getElementById('fp-status-text');
     var fpScanBtn = document.getElementById('btn-fp-scan');
-    var fpVirtualBtn = document.getElementById('btn-fp-virtual');
     var nextBtn = document.getElementById('register-next');
 
     if (registrationData.fingerprintCaptured) {
       fingerprintScene.setState('success');
-      if (status) status.textContent = 'Fingerprint enrolled previously. You may re-scan or proceed to the next step.';
+      if (status) status.textContent = 'Fingerprint enrolled previously. Click RETRY SCAN to capture again or NEXT STEP to proceed.';
       if (fpScanBtn) {
         fpScanBtn.disabled = false;
-        fpScanBtn.textContent = 'RE-SCAN (HARDWARE)';
-      }
-      if (fpVirtualBtn) {
-        fpVirtualBtn.disabled = false;
-        fpVirtualBtn.textContent = 'RE-ENROLL (BIOMETRIC ENGINE)';
-        fpVirtualBtn.className = 'btn btn-outline btn-block mt-3';
+        fpScanBtn.textContent = 'RETRY SCAN';
       }
       if (nextBtn) nextBtn.disabled = false;
     } else {
-      fingerprintScene.setState('idle');
-      if (status) status.textContent = 'Touch the hardware sensor for laptop owner, or use the Biometric Engine for friends.';
+      fingerprintScene.setState('scanning');
+      if (status) status.textContent = 'Scanning sensor... Place finger on sensor pad.';
       if (fpScanBtn) {
-        fpScanBtn.disabled = false;
-        fpScanBtn.textContent = 'BEGIN SCAN (HARDWARE SENSOR)';
-      }
-      if (fpVirtualBtn) {
-        fpVirtualBtn.disabled = false;
-        fpVirtualBtn.textContent = 'ENROLL VIA BIOMETRIC ENGINE (GUEST / FRIEND)';
-        fpVirtualBtn.className = 'btn btn-outline btn-block mt-3';
+        fpScanBtn.disabled = true;
+        fpScanBtn.textContent = 'SCANNING SENSOR...';
       }
       if (nextBtn) nextBtn.disabled = true;
+
+      /* Automatically start fingerprint capture */
+      setTimeout(function () {
+        if (!registrationData.fingerprintCaptured && currentStep === 3) {
+          window.trivoteSocket.emit('capture_fingerprint', {
+            voter_id: registrationData.voterId,
+            use_virtual: false
+          });
+        }
+      }, 500);
     }
   }
 
@@ -750,6 +749,15 @@
     if (counter) {
       counter.textContent = 'Captures: ' + captureCount + '/' + maxCaptures;
     }
+    var pips = document.querySelectorAll('.frame-pip');
+    pips.forEach(function (pip, idx) {
+      pip.classList.remove('active', 'completed');
+      if (idx < captureCount) {
+        pip.classList.add('completed');
+      } else if (idx === captureCount) {
+        pip.classList.add('active');
+      }
+    });
   }
 
   function cleanupRegister() {

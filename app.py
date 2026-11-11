@@ -506,9 +506,9 @@ def handle_capture_fingerprint(data):
     def _do_capture(sid, v_id, is_virtual):
         try:
             if is_virtual:
-                waiting_msg = "Extracting ridge characteristics via Biometric Engine..."
+                waiting_msg = "Extracting ridge characteristics..."
             else:
-                waiting_msg = "Touch your laptop fingerprint sensor now (Windows Hello prompt is active)..."
+                waiting_msg = "Touch your fingerprint sensor now..."
 
             socketio.emit("fingerprint_status", {
                 "status": "waiting",
@@ -826,8 +826,8 @@ def handle_match_fingerprint(data):
             is_hw = is_real_template(voter.fingerprint_template) if voter.fingerprint_template else False
 
             if is_hw and not is_impostor:
-                waiting_msg = "Touch your laptop fingerprint sensor now (Windows Hello prompt is active)..."
-                auth_mode = "windows_hello"
+                waiting_msg = "Touch your fingerprint sensor now..."
+                auth_mode = "hardware_sensor"
             else:
                 waiting_msg = "Scanning fingerprint ridge patterns..."
                 auth_mode = "simulation"

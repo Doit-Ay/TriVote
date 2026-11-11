@@ -59,11 +59,17 @@
       target.classList.add('active', 'page-enter');
       window.appState.currentScreen = screenId;
 
-      /* Update home-screen-active class on body */
+      /* Update home-screen-active and admin-screen-active classes on body */
       if (screenId === 'screen-home') {
         document.body.classList.add('home-screen-active');
       } else {
         document.body.classList.remove('home-screen-active');
+      }
+
+      if (screenId === 'screen-admin') {
+        document.body.classList.add('admin-screen-active');
+      } else {
+        document.body.classList.remove('admin-screen-active');
       }
 
       /* Remove animation class after it plays */

@@ -29,6 +29,7 @@ class FingerprintScene {
     this.sensorGroup = null;
     this.sensorChassis = null;
     this.platenGlass = null;
+    this.fingerprintMesh = null;
     this.neonRing = null;
     this.laserCore = null;
     this.laserFan = null;
@@ -100,20 +101,46 @@ class FingerprintScene {
     this.neonRing.position.y = 0.015;
     this.sensorGroup.add(this.neonRing);
 
-    /* 3. Optical Glass Platen with Papillary Ridge Texture */
+    /* 3. Optical Glass Platen */
     const platenGeo = new THREE.CylinderGeometry(1.48, 1.48, 0.04, 64);
-    const fingerprintTexture = this._createFingerprintTexture();
     const platenMat = new THREE.MeshStandardMaterial({
-      map: fingerprintTexture,
-      color: 0x111c33,
-      metalness: 0.4,
-      roughness: 0.15,
-      emissive: 0x06b6d4,
-      emissiveIntensity: 0.08
+      color: 0x07111e,
+      metalness: 0.85,
+      roughness: 0.18,
+      emissive: 0x020b16,
+      emissiveIntensity: 0.25
     });
     this.platenGlass = new THREE.Mesh(platenGeo, platenMat);
     this.platenGlass.position.y = 0.01;
     this.sensorGroup.add(this.platenGlass);
+
+    /* 3b. Authentic High-Resolution Papillary Ridge Decal */
+    const fpLoader = new THREE.TextureLoader();
+    const fpTexture = fpLoader.load('/static/images/fingerprint-pattern.png', (tex) => {
+      tex.needsUpdate = true;
+      if (this.renderer && this.scene && this.camera) {
+        this.renderer.render(this.scene, this.camera);
+      }
+    });
+    fpTexture.wrapS = THREE.ClampToEdgeWrapping;
+    fpTexture.wrapT = THREE.ClampToEdgeWrapping;
+    fpTexture.generateMipmaps = true;
+    fpTexture.minFilter = THREE.LinearMipmapLinearFilter;
+
+    const fpGeo = new THREE.PlaneGeometry(2.2, 2.2);
+    const fpMat = new THREE.MeshBasicMaterial({
+      map: fpTexture,
+      transparent: true,
+      opacity: 0.9,
+      color: 0x06b6d4,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    this.fingerprintMesh = new THREE.Mesh(fpGeo, fpMat);
+    this.fingerprintMesh.rotation.x = -Math.PI / 2;
+    this.fingerprintMesh.position.y = 0.032;
+    this.sensorGroup.add(this.fingerprintMesh);
 
     /* 4. Forensic Platen Corner Tick Reticles */
     this._createPlatenReticles();
@@ -266,156 +293,6 @@ class FingerprintScene {
     });
   }
 
-  /**
-   * Generate an authentic high-resolution papillary ridge fingerprint texture
-   * on a 1024x1024 canvas with natural whorls, deltas, and minutiae markers.
-   */
-  _createFingerprintTexture() {
-    const size = 1024;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-
-    const cx = size / 2;
-    const cy = size / 2;
-
-    /* Base platen glass surface background */
-    ctx.fillStyle = '#0a1224';
-    ctx.fillRect(0, 0, size, size);
-
-    /* Subtle radial platen depth gradient */
-    const bgGrad = ctx.createRadialGradient(cx, cy, 60, cx, cy, size * 0.46);
-    bgGrad.addColorStop(0, '#101e38');
-    bgGrad.addColorStop(0.75, '#0b1325');
-    bgGrad.addColorStop(1, '#060a14');
-    ctx.fillStyle = bgGrad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, size * 0.46, 0, Math.PI * 2);
-    ctx.fill();
-
-    /* Fingertip silhouette clipping area */
-    ctx.save();
-    ctx.beginPath();
-    ctx.ellipse(cx, cy + 20, 310, 390, 0, 0, Math.PI * 2);
-    ctx.clip();
-
-    /* 1. Core friction ridges (Whorl and converging loops) */
-    ctx.lineWidth = 2.4;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    /* Central Whorl Spiral */
-    for (let r = 18; r < 360; r += 11) {
-      ctx.beginPath();
-      const alpha = Math.max(0.2, 0.85 - (r / 360) * 0.4);
-      ctx.strokeStyle = `rgba(6, 182, 212, ${alpha})`;
-
-      /* Realistic dermatoglyphic ridge perturbation */
-      for (let theta = 0; theta <= Math.PI * 2 + 0.1; theta += 0.08) {
-        const wobble = Math.sin(theta * 3 + r * 0.12) * 5 + Math.cos(theta * 2) * 3;
-        const radiusX = r + wobble;
-        const radiusY = r * 1.35 + Math.sin(theta) * 8;
-        const px = cx + Math.cos(theta) * radiusX;
-        const py = cy + 40 + Math.sin(theta) * radiusY;
-        if (theta === 0) {
-          ctx.moveTo(px, py);
-        } else {
-          ctx.lineTo(px, py);
-        }
-      }
-      ctx.stroke();
-    }
-
-    /* 2. Distal Arches (Top region towards fingertip) */
-    for (let i = 0; i < 22; i++) {
-      ctx.beginPath();
-      const archY = cy - 40 - i * 14;
-      const radius = 90 + i * 16;
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.45)';
-      ctx.arc(cx, archY + radius * 0.4, radius, Math.PI * 1.1, Math.PI * 1.9);
-      ctx.stroke();
-    }
-
-    /* 3. Basal Delta Convergences (Bottom left & right) */
-    for (let d = 0; d < 12; d++) {
-      /* Left delta */
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.35)';
-      ctx.moveTo(cx - 240, cy + 180 + d * 10);
-      ctx.quadraticCurveTo(cx - 150, cy + 120 + d * 8, cx - 80, cy + 240 + d * 10);
-      ctx.stroke();
-
-      /* Right delta */
-      ctx.beginPath();
-      ctx.moveTo(cx + 240, cy + 180 + d * 10);
-      ctx.quadraticCurveTo(cx + 150, cy + 120 + d * 8, cx + 80, cy + 240 + d * 10);
-      ctx.stroke();
-    }
-
-    /* 4. Forensic Minutiae Callouts (circles + leader ticks) */
-    const minutiaePoints = [
-      { x: cx - 110, y: cy - 140, tag: 'B-04' },
-      { x: cx + 95, y: cy - 120, tag: 'E-09' },
-      { x: cx - 180, y: cy - 40, tag: 'B-02' },
-      { x: cx + 150, y: cy - 25, tag: 'E-03' },
-      { x: cx - 40, y: cy - 70, tag: 'C-01' },
-      { x: cx + 60, y: cy + 10, tag: 'B-07' },
-      { x: cx - 140, y: cy + 60, tag: 'E-11' },
-      { x: cx + 130, y: cy + 85, tag: 'B-14' },
-      { x: cx - 50, y: cy + 130, tag: 'E-06' },
-      { x: cx + 70, y: cy + 160, tag: 'B-15' },
-      { x: cx - 160, y: cy + 180, tag: 'D-01' },
-      { x: cx + 170, y: cy + 195, tag: 'D-02' }
-    ];
-
-    ctx.font = '11px "JetBrains Mono", monospace';
-    ctx.textBaseline = 'middle';
-
-    minutiaePoints.forEach(pt => {
-      /* Small target ring */
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.arc(pt.x, pt.y, 8, 0, Math.PI * 2);
-      ctx.stroke();
-
-      /* Center point */
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
-      ctx.beginPath();
-      ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
-      ctx.fill();
-
-      /* Leader tick & text */
-      ctx.beginPath();
-      ctx.moveTo(pt.x + 9, pt.y);
-      ctx.lineTo(pt.x + 22, pt.y);
-      ctx.stroke();
-
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
-      ctx.fillText(pt.tag, pt.x + 26, pt.y);
-    });
-
-    ctx.restore();
-
-    /* Forensic Core Crosshair */
-    ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
-    ctx.lineWidth = 1.0;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(cx - 30, cy + 30);
-    ctx.lineTo(cx + 30, cy + 30);
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx, cy + 60);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    return texture;
-  }
-
   animate() {
     if (this.disposed) return;
 
@@ -428,6 +305,22 @@ class FingerprintScene {
     if (this.neonRing) this.neonRing.material.color.copy(this.stateColor);
     if (this.laserCore) this.laserCore.material.color.copy(this.stateColor);
     if (this.laserFan) this.laserFan.material.color.copy(this.stateColor);
+    if (this.laserLight) this.laserLight.color.copy(this.stateColor);
+    if (this.radarPulse) this.radarPulse.material.color.copy(this.stateColor);
+
+    /* Update authentic fingerprint decal */
+    if (this.fingerprintMesh && this.fingerprintMesh.material) {
+      this.fingerprintMesh.material.color.copy(this.stateColor);
+      if (this.state === 'scanning') {
+        this.fingerprintMesh.material.opacity = 0.85 + Math.sin(t * 6) * 0.12;
+      } else if (this.state === 'success') {
+        this.fingerprintMesh.material.opacity = 1.0;
+      } else if (this.state === 'error') {
+        this.fingerprintMesh.material.opacity = 0.95;
+      } else {
+        this.fingerprintMesh.material.opacity = 0.85;
+      }
+    }
     if (this.laserLight) this.laserLight.color.copy(this.stateColor);
     if (this.radarPulse) this.radarPulse.material.color.copy(this.stateColor);
 
@@ -527,9 +420,10 @@ class FingerprintScene {
         this.targetColor.set(0x06b6d4);
         this.scanSpeed = 0.8;
         if (this.platenGlass) {
-          this.platenGlass.material.emissive.set(0x06b6d4);
-          this.platenGlass.material.emissiveIntensity = 0.06;
+          this.platenGlass.material.emissive.set(0x020b16);
+          this.platenGlass.material.emissiveIntensity = 0.25;
         }
+        if (this.fingerprintMesh) this.fingerprintMesh.material.color.set(0x06b6d4);
         /* Reset minutiae lock */
         this.minutiaeNodes.forEach(n => { n.locked = false; n.pulseTime = 0; });
         break;
@@ -538,18 +432,20 @@ class FingerprintScene {
         this.targetColor.set(0x22d3ee);
         this.scanSpeed = 2.4;
         if (this.platenGlass) {
-          this.platenGlass.material.emissive.set(0x22d3ee);
-          this.platenGlass.material.emissiveIntensity = 0.16;
+          this.platenGlass.material.emissive.set(0x041926);
+          this.platenGlass.material.emissiveIntensity = 0.35;
         }
+        if (this.fingerprintMesh) this.fingerprintMesh.material.color.set(0x22d3ee);
         break;
 
       case 'success':
         this.targetColor.set(0x10b981);
         this.scanSpeed = 0.4;
         if (this.platenGlass) {
-          this.platenGlass.material.emissive.set(0x10b981);
-          this.platenGlass.material.emissiveIntensity = 0.25;
+          this.platenGlass.material.emissive.set(0x062818);
+          this.platenGlass.material.emissiveIntensity = 0.4;
         }
+        if (this.fingerprintMesh) this.fingerprintMesh.material.color.set(0x10b981);
         this.minutiaeNodes.forEach(n => {
           n.locked = true;
           n.mesh.material.color.set(0x10b981);
@@ -560,9 +456,10 @@ class FingerprintScene {
         this.targetColor.set(0xef4444);
         this.scanSpeed = 0.3;
         if (this.platenGlass) {
-          this.platenGlass.material.emissive.set(0xef4444);
-          this.platenGlass.material.emissiveIntensity = 0.25;
+          this.platenGlass.material.emissive.set(0x2a0808);
+          this.platenGlass.material.emissiveIntensity = 0.4;
         }
+        if (this.fingerprintMesh) this.fingerprintMesh.material.color.set(0xef4444);
         this.minutiaeNodes.forEach(n => {
           n.mesh.material.color.set(0xef4444);
         });
@@ -606,6 +503,15 @@ class FingerprintScene {
           }
         }
       });
+    }
+
+    if (this.fingerprintMesh) {
+      if (this.fingerprintMesh.geometry) this.fingerprintMesh.geometry.dispose();
+      if (this.fingerprintMesh.material) {
+        if (this.fingerprintMesh.material.map) this.fingerprintMesh.material.map.dispose();
+        this.fingerprintMesh.material.dispose();
+      }
+      this.fingerprintMesh = null;
     }
 
     if (this.renderer) {

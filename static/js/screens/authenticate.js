@@ -174,7 +174,7 @@
     if (statusEl) {
       statusEl.textContent = isImpostor
         ? 'Simulating un-enrolled finger touch (impostor test)...'
-        : 'Touch your laptop fingerprint sensor now (Windows Hello prompt is opening)...';
+        : 'Scanning sensor... Place finger on sensor pad.';
     }
 
     window.trivoteSocket.emit('match_fingerprint', {
@@ -325,7 +325,7 @@
         stepper.markError(1);
         if (scanBtn) {
           scanBtn.disabled = false;
-          scanBtn.textContent = 'RE-SCAN FINGER';
+          scanBtn.textContent = 'RETRY SCAN';
         }
         if (impostorBtn) {
           impostorBtn.disabled = false;
@@ -336,10 +336,10 @@
         var retryStatuses = ['timeout', 'bad_capture', 'error', 'busy', 'legacy_template', 'not_enrolled'];
         if (retryStatuses.indexOf(data.status) !== -1) {
           var statusEl = document.getElementById('auth-fp-status');
-          if (statusEl) statusEl.textContent = withModePrefix(data, data.message || 'Fingerprint scan failed. Please retry.');
+          if (statusEl) statusEl.textContent = withModePrefix(data, data.message || 'Scan timed out or unreadable. Please retry.');
           if (scanBtn) {
             scanBtn.disabled = false;
-            scanBtn.textContent = 'RE-SCAN FINGER';
+            scanBtn.textContent = 'RETRY SCAN';
           }
           if (impostorBtn) impostorBtn.disabled = false;
           return;
@@ -455,18 +455,25 @@
     fingerprintScene.setState('idle');
 
     var statusEl = document.getElementById('auth-fp-status');
-    if (statusEl) statusEl.textContent = 'Touch your sensor or click "TOUCH SENSOR NOW" to verify identity.';
+    if (statusEl) statusEl.textContent = 'Scanning sensor... Place finger on sensor pad.';
 
     var scanBtn = document.getElementById('btn-auth-fp-scan');
     var impostorBtn = document.getElementById('btn-auth-fp-impostor');
 
     if (scanBtn) {
-      scanBtn.disabled = false;
-      scanBtn.textContent = 'TOUCH SENSOR NOW';
+      scanBtn.disabled = true;
+      scanBtn.textContent = 'SCANNING SENSOR...';
     }
     if (impostorBtn) {
       impostorBtn.disabled = false;
     }
+
+    /* Auto-start fingerprint verification */
+    setTimeout(function () {
+      if (authStep === 2) {
+        startFingerprintAuth(false);
+      }
+    }, 400);
   }
 
   function initAuthIris() {

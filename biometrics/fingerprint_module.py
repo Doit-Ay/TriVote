@@ -86,8 +86,7 @@ TEMPLATE_PREFIX = b"WBF1:"
 TEMPLATE_LEN = 37  # 5-byte prefix + 32-byte SHA-256 digest
 
 NOT_ENROLLED_WINDOWS_MSG = (
-    "This finger is not enrolled in Windows Hello on this PC. Enroll it in "
-    "Settings > Accounts > Sign-in options > Fingerprint, then retry"
+    "Finger not recognized or sensor timed out. Please retry."
 )
 LEGACY_TEMPLATE_MSG = (
     "This voter's fingerprint was registered in simulation mode and must be "
@@ -626,7 +625,7 @@ class FingerprintModule:
                     "status": "match",
                     "success": True,
                     "score": 0.965,
-                    "message": "Enrolled fingerprint verified on sensor (Windows Hello)",
+                    "message": "Enrolled fingerprint verified on sensor",
                     "mode": "windows_hello",
                     "subfactor": 245,
                     "unit_id": 3,
@@ -700,7 +699,7 @@ class FingerprintModule:
                     return {
                         "status": "match",
                         "success": True,
-                        "message": "Fingerprint enrolled on hardware sensor (Windows Hello)",
+                        "message": "Fingerprint enrolled on hardware sensor",
                         "template": template,
                         "mode": "windows_hello",
                         "subfactor": 245,
